@@ -14,7 +14,7 @@ exports.register = async (req, res) => {
     await newUser.save();
     res
       .status(201)
-      .json({ message: "User registered successfully", userId: newUser._id });
+      .json({ message: "User registered successfully", userId: newUser._id, status: "success" });
   } catch (error) {
     res
       .status(500)
@@ -63,7 +63,7 @@ exports.forgotPassword = async (req, res) => {
     const resetUrl = `http://yourfrontend.com/reset-password?token=${resetToken}`;
     await emailService.sendPasswordResetEmail(user.email, resetUrl);
 
-    res.json({ message: "Password reset link sent to email" });
+    res.json({ message: "Password reset link sent to email", status: "success" });
   } catch (error) {
     console.error('Error in forgotPassword:', error);
     res.status(500).json({ message: "Error processing request", error: error.message });
@@ -87,7 +87,7 @@ exports.resetPassword = async (req, res) => {
     user.resetPasswordExpires = undefined;
     await user.save();
 
-    res.json({ message: "Password has been reset successfully" });
+    res.json({ message: "Password has been reset successfully", status: "success" });
   } catch (error) {
     console.error('Error in resetPassword:', error);
     res.status(500).json({ message: "Error resetting password", error: error.message });

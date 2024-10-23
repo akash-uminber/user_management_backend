@@ -8,7 +8,7 @@ exports.addWorkExperience = async (req, res) => {
     }
     workInfo.workExperiences.push(req.body);
     await workInfo.save();
-    res.status(201).json({ message: 'Work experience added successfully', workInfo });
+    res.status(201).json({ message: 'Work experience added successfully', workInfo, status: "success" });
   } catch (error) {
     res.status(400).json({ message: 'Error adding work experience', error: error.message });
   }
@@ -20,7 +20,7 @@ exports.getWorkInfo = async (req, res) => {
     if (!workInfo) {
       return res.status(404).json({ message: 'Work information not found' });
     }
-    res.json(workInfo);
+    res.json({ workInfo, status: "success" });
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving work information', error: error.message });
   }
@@ -39,7 +39,7 @@ exports.updateWorkExperience = async (req, res) => {
     }
     workInfo.workExperiences[experienceIndex] = { ...workInfo.workExperiences[experienceIndex].toObject(), ...req.body };
     await workInfo.save();
-    res.json({ message: 'Work experience updated successfully', workInfo });
+    res.json({ message: 'Work experience updated successfully', workInfo, status: "success" });
   } catch (error) {
     res.status(400).json({ message: 'Error updating work experience', error: error.message });
   }
@@ -54,7 +54,7 @@ exports.deleteWorkExperience = async (req, res) => {
     }
     workInfo.workExperiences = workInfo.workExperiences.filter(exp => exp._id.toString() !== workExperienceId);
     await workInfo.save();
-    res.json({ message: 'Work experience deleted successfully', workInfo });
+    res.json({ message: 'Work experience deleted successfully', workInfo, status: "success" });
   } catch (error) {
     res.status(400).json({ message: 'Error deleting work experience', error: error.message });
   }

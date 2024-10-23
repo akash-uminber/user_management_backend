@@ -14,7 +14,7 @@ exports.createOrUpdateWorkInfo = async (req, res) => {
       });
     }
     await workInfo.save();
-    res.status(200).json({ message: 'Work information saved successfully', workInfo });
+    res.status(200).json({ message: 'Work information saved successfully', workInfo, status: "success" });
   } catch (error) {
     res.status(400).json({ message: 'Error saving work information', error: error.message });
   }
@@ -26,7 +26,7 @@ exports.getWorkInfo = async (req, res) => {
     if (!workInfo) {
       return res.status(404).json({ message: 'Work information not found' });
     }
-    res.json(workInfo);
+    res.json({ workInfo, status: "success" });
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving work information', error: error.message });
   }
@@ -38,7 +38,7 @@ exports.deleteWorkInfo = async (req, res) => {
     if (!result) {
       return res.status(404).json({ message: 'Work information not found' });
     }
-    res.json({ message: 'Work information deleted successfully' });
+    res.json({ message: 'Work information deleted successfully', status: "success" });
   } catch (error) {
     res.status(400).json({ message: 'Error deleting work information', error: error.message });
   }

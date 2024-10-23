@@ -32,7 +32,7 @@ exports.getCandidateDetails = async (req, res) => {
       legalCompliance
     };
 
-    res.json(candidateDetails);
+    res.json({ candidateDetails, status: "success" });
   } catch (error) {
     console.error('Error retrieving candidate details:', error);
     res.status(500).json({ message: 'Error retrieving candidate details', error: error.message });
@@ -71,7 +71,7 @@ exports.searchCandidates = async (req, res) => {
         return res.status(400).json({ message: 'Invalid search type' });
     }
 
-    res.json(results);
+    res.json({ results, status: "success" });
   } catch (error) {
     console.error('Error searching candidates:', error);
     res.status(500).json({ message: 'Error searching candidates', error: error.message });
@@ -110,7 +110,7 @@ exports.getSpecificInfo = async (req, res) => {
       return res.status(404).json({ message: 'Information not found' });
     }
 
-    res.json(result);
+    res.json({ result, status: "success" });
   } catch (error) {
     console.error('Error retrieving specific info:', error);
     res.status(500).json({ message: 'Error retrieving specific info', error: error.message });

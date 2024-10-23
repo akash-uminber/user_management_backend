@@ -14,7 +14,7 @@ exports.uploadDocuments = async (req, res) => {
       });
     }
     await legalCompliance.save();
-    res.status(200).json({ message: 'Legal compliance documents uploaded successfully', legalCompliance });
+    res.status(200).json({ message: 'Legal compliance documents uploaded successfully', legalCompliance, status: "success" });
   } catch (error) {
     res.status(400).json({ message: 'Error uploading legal compliance documents', error: error.message });
   }
@@ -26,7 +26,7 @@ exports.getDocuments = async (req, res) => {
     if (!legalCompliance) {
       return res.status(404).json({ message: 'Legal compliance documents not found' });
     }
-    res.json(legalCompliance);
+    res.json({ legalCompliance, status: "success" });
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving legal compliance documents', error: error.message });
   }
@@ -44,7 +44,7 @@ exports.updateDocument = async (req, res) => {
     }
     legalCompliance[documentType] = req.body.documentPath;
     await legalCompliance.save();
-    res.json({ message: 'Legal compliance document updated successfully', legalCompliance });
+    res.json({ message: 'Legal compliance document updated successfully', legalCompliance, status: "success" });
   } catch (error) {
     res.status(400).json({ message: 'Error updating legal compliance document', error: error.message });
   }
@@ -56,7 +56,7 @@ exports.deleteDocuments = async (req, res) => {
     if (!result) {
       return res.status(404).json({ message: 'Legal compliance documents not found' });
     }
-    res.json({ message: 'Legal compliance documents deleted successfully' });
+    res.json({ message: 'Legal compliance documents deleted successfully', status: "success" });
   } catch (error) {
     res.status(400).json({ message: 'Error deleting legal compliance documents', error: error.message });
   }

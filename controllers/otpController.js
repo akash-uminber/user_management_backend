@@ -26,7 +26,7 @@ exports.generateOTP = async (req, res) => {
     // Comment out the email sending for now
     // await emailService.sendOTPEmail(user.email, otp);
 
-    res.json({ message: 'OTP generated and sent to your email' });
+    res.json({ message: 'OTP generated and sent to your email', status: "success" });
   } catch (error) {
     console.error('Error in generateOTP:', error);
     res.status(500).json({ message: 'Failed to generate OTP', error: error.message });
@@ -45,8 +45,7 @@ exports.verifyOTP = async (req, res) => {
     const isValid = authenticator.verify({ token: otp, secret: user.otpSecret });
 
     if (isValid) {
-      // OTP is valid, you can generate a new JWT token here if needed
-      res.json({ message: 'OTP verified successfully' });
+      res.json({ message: 'OTP verified successfully', status: "success" });
     } else {
       res.status(400).json({ message: 'Invalid OTP' });
     }

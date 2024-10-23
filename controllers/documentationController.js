@@ -14,7 +14,7 @@ exports.uploadDocuments = async (req, res) => {
       });
     }
     await documentation.save();
-    res.status(200).json({ message: 'Documents uploaded successfully', documentation });
+    res.status(200).json({ message: 'Documents uploaded successfully', documentation, status: "success" });
   } catch (error) {
     res.status(400).json({ message: 'Error uploading documents', error: error.message });
   }
@@ -26,7 +26,7 @@ exports.getDocuments = async (req, res) => {
     if (!documentation) {
       return res.status(404).json({ message: 'Documentation not found' });
     }
-    res.json(documentation);
+    res.json({ documentation, status: "success" });
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving documentation', error: error.message });
   }
@@ -44,7 +44,7 @@ exports.updateDocument = async (req, res) => {
     }
     documentation[documentType] = req.body.documentPath;
     await documentation.save();
-    res.json({ message: 'Document updated successfully', documentation });
+    res.json({ message: 'Document updated successfully', documentation, status: "success" });
   } catch (error) {
     res.status(400).json({ message: 'Error updating document', error: error.message });
   }
@@ -56,7 +56,7 @@ exports.deleteDocuments = async (req, res) => {
     if (!result) {
       return res.status(404).json({ message: 'Documentation not found' });
     }
-    res.json({ message: 'Documentation deleted successfully' });
+    res.json({ message: 'Documentation deleted successfully', status: "success" });
   } catch (error) {
     res.status(400).json({ message: 'Error deleting documentation', error: error.message });
   }
