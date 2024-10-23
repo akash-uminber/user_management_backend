@@ -28,3 +28,23 @@ exports.sendOTPEmail = async (to, otp) => {
     throw new Error('Failed to send OTP email');
   }
 };
+
+exports.sendPasswordResetEmail = async (to, resetUrl) => {
+  const mailOptions = {
+    from: `"Your App" <${config.email.user}>`,
+    to: to,
+    subject: 'Password Reset Request',
+    text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+           Please click on the following link, or paste this into your browser to complete the process:\n\n
+           ${resetUrl}\n\n
+           If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Password reset email sent to ${to}`);
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    throw new Error('Failed to send password reset email');
+  }
+};

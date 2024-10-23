@@ -140,6 +140,14 @@ router.delete(
 // Candidate details route
 router.get('/candidate/:candidateId', authMiddleware, candidateController.getCandidateDetails);
 
+// Candidate search and specific info routes
+router.get('/candidates/search', authMiddleware, candidateController.searchCandidates);
+router.get('/candidate/:userId/:infoType', authMiddleware, candidateController.getSpecificInfo);
+
+// Password reset routes
+router.post("/forgot-password", authController.forgotPassword);
+router.post("/reset-password", authController.resetPassword);
+
 // Add more routes here
 
 module.exports = router;
