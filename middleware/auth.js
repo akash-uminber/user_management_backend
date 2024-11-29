@@ -1,22 +1,47 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 
-module.exports = (req, res, next) => {
-  console.log('Headers:', req.headers); // Add this line
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+const authMiddleware = async (req, res, next) => {
+    try {
+        // Get token from Authorization header or cookie
+        let token = req.cookies.token;
+        
+        // If no cookie token, check Authorization header
+        if (!token) {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                token = authHeader.split(' ')[1];
+            }
+        }
 
-  if (!token) {
-    console.log('No token provided'); // Add this line
-    return res.status(401).json({ message: 'No token, authorization denied' });
-  }
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: 'Access token missing!'
+            });
+        }
 
-  try {
-    const decoded = jwt.verify(token, config.jwtSecret);
-    req.userId = decoded.userId;
-    console.log('Token verified, userId:', req.userId); // Add this line
-    next();
-  } catch (error) {
-    console.log('Token verification failed:', error); // Add this line
-    res.status(401).json({ message: 'Token is not valid' });
-  }
+        try {
+            // Verify token
+            const decoded = jwt.verify(token, config.jwtSecret);
+            req.user = decoded;
+            console.log(' Token verified, user:', decoded);
+            next();
+        } catch (err) {
+            console.error(' Token verification failed:', err);
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid token!'
+            });
+        }
+    } catch (err) {
+        console.error(' Auth middleware error:', err);
+        return res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: err.message
+        });
+    }
 };
+
+module.exports = authMiddleware;

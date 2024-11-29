@@ -1,153 +1,55 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const exampleController = require("../controllers/exampleController");
-const authController = require("../controllers/authController");
-const otpController = require("../controllers/otpController");
-const personalInfoController = require("../controllers/personalInfoController");
-const educationInfoController = require("../controllers/educationInfoController");
-const workInfoController = require("../controllers/workInfoController");
-const currentWorkInfoController = require("../controllers/currentWorkInfoController");
-const documentationController = require("../controllers/documentationController");
-const authMiddleware = require("../middleware/auth");
-const legalComplianceController = require("../controllers/legalComplianceController");
-const candidateController = require("../controllers/candidateController");
+const upload = require('../middleware/upload');
 
-// Public routes
-router.post("/register", authController.register);
-router.post("/login", authController.login);
+const authController = require('../controllers/authController');
+const personalInfoController = require('../controllers/personalInfoController');
+const educationInfoController = require('../controllers/educationInfoController');
+const workInfoController = require('../controllers/workInfoController');
+const currentWorkInfoController = require('../controllers/currentWorkInfoController');
 
-// OTP routes (protected)
-router.post("/generate-otp", authMiddleware, otpController.generateOTP);
-router.post("/verify-otp", authMiddleware, otpController.verifyOTP);
+// Debug route to verify router is working
+router.get('/test', (req, res) => {
+  res.json({ message: 'Router is working' });
+});
 
-// Protected routes (require both authentication and OTP verification)
-router.get("/hello", authMiddleware, exampleController.getHello);
+// Auth routes
+router.post('/login', authController.login);
+router.post('/register', authController.register);
+router.post('/verify-otp', authController.verifyOTP);
 
 // Personal Information routes
-router.post(
-  "/personal-info",
-  authMiddleware,
-  personalInfoController.createPersonalInfo
-);
-router.get(
-  "/personal-info",
-  authMiddleware,
-  personalInfoController.getPersonalInfo
-);
-router.put(
-  "/personal-info",
-  authMiddleware,
-  personalInfoController.updatePersonalInfo
-);
+router.post("/personal-info", personalInfoController.addPersonalInfo);
+router.get("/personal-info/:userId", personalInfoController.getPersonalInfo);
+router.put("/personal-info/:userId", personalInfoController.updatePersonalInfo);
 
-// Education Information routes
-router.post("/education", authMiddleware, educationInfoController.addEducation);
-router.get(
-  "/education",
-  authMiddleware,
-  educationInfoController.getEducationInfo
+// Education routes with file upload
+router.post('/education', 
+  (req, res, next) => {
+    console.log('Incoming education request');
+    console.log('Content-Type:', req.headers['content-type']);
+    next();
+  },
+  upload,
+  (req, res, next) => {
+    console.log('After upload middleware');
+    console.log('Files:', req.files);
+    console.log('Body:', req.body);
+    next();
+  },
+  educationInfoController.addEducation
 );
-router.put(
-  "/education/:educationId",
-  authMiddleware,
-  educationInfoController.updateEducation
-);
-router.delete(
-  "/education/:educationId",
-  authMiddleware,
-  educationInfoController.deleteEducation
-);
+router.get('/education/:userId', educationInfoController.getEducationInfo);
+router.put('/education/:userId/:educationId', upload, educationInfoController.updateEducation);
 
-// Work Information routes
-router.post(
-  "/work-experience",
-  authMiddleware,
-  workInfoController.addWorkExperience
-);
-router.get("/work-info", authMiddleware, workInfoController.getWorkInfo);
-router.put(
-  "/work-experience/:workExperienceId",
-  authMiddleware,
-  workInfoController.updateWorkExperience
-);
-router.delete(
-  "/work-experience/:workExperienceId",
-  authMiddleware,
-  workInfoController.deleteWorkExperience
-);
+// Work Experience Routes
+router.post('/work', upload, workInfoController.addWorkExperience);
+router.get('/work/:userId', workInfoController.getWorkInfo);
+router.put('/work/:userId', upload, workInfoController.updateWorkInfo);
 
-// Current Work Information routes
-router.post(
-  "/current-work-info",
-  authMiddleware,
-  currentWorkInfoController.createOrUpdateWorkInfo
-);
-router.get(
-  "/current-work-info",
-  authMiddleware,
-  currentWorkInfoController.getWorkInfo
-);
-router.delete(
-  "/current-work-info",
-  authMiddleware,
-  currentWorkInfoController.deleteWorkInfo
-);
-
-// Documentation routes
-router.post(
-  "/documentation",
-  authMiddleware,
-  documentationController.uploadDocuments
-);
-router.get(
-  "/documentation",
-  authMiddleware,
-  documentationController.getDocuments
-);
-router.put(
-  "/documentation/:documentType",
-  authMiddleware,
-  documentationController.updateDocument
-);
-router.delete(
-  "/documentation",
-  authMiddleware,
-  documentationController.deleteDocuments
-);
-
-// Legal Compliance routes
-router.post(
-  "/legal-compliance",
-  authMiddleware,
-  legalComplianceController.uploadDocuments
-);
-router.get(
-  "/legal-compliance",
-  authMiddleware,
-  legalComplianceController.getDocuments
-);
-router.put(
-  "/legal-compliance/:documentType",
-  authMiddleware,
-  legalComplianceController.updateDocument
-);
-router.delete(
-  "/legal-compliance",
-  authMiddleware,
-  legalComplianceController.deleteDocuments
-);
-
-// Candidate details route
-router.get('/candidate/:candidateId', authMiddleware, candidateController.getCandidateDetails);
-
-// Candidate search and specific info routes
-router.get('/candidates/search', authMiddleware, candidateController.searchCandidates);
-router.get('/candidate/:userId/:infoType', authMiddleware, candidateController.getSpecificInfo);
-
-// Password reset routes
-router.post("/forgot-password", authController.forgotPassword);
-router.post("/reset-password", authController.resetPassword);
-
-// Add more routes here
+// Current Work Info Routes
+router.post('/current-work', upload, currentWorkInfoController.addCurrentWorkInfo);
+router.get('/current-work/:userId', currentWorkInfoController.getCurrentWorkInfo);
+router.put('/current-work/:userId', upload, currentWorkInfoController.updateCurrentWorkInfo);
 
 module.exports = router;

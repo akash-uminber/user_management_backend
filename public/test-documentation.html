@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Documentation Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .document-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .document-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        .error {
+            color: #ff0000;
+            background-color: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .success {
+            color: #008000;
+            background-color: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+        }
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .view-info {
+            background-color: #2196F3;
+        }
+        .view-info:hover {
+            background-color: #1976D2;
+        }
+        .delete-btn {
+            background-color: #f44336;
+        }
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <h2>Documentation Upload Test</h2>
+    
+    <!-- Upload Form -->
+    <form id="uploadForm" class="document-section">
+        <h3>Upload Documents</h3>
+        <div class="form-group">
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId" name="userId" value="674803e8b330c3ef6486507c" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="resume">Resume:</label>
+            <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" required>
+            <img id="resumePreview" class="preview" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="idProof">ID Proof:</label>
+            <input type="file" id="idProof" name="idProof" accept=".pdf,.jpg,.jpeg,.png" required>
+            <img id="idProofPreview" class="preview" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="addressProof">Address Proof:</label>
+            <input type="file" id="addressProof" name="addressProof" accept=".pdf,.jpg,.jpeg,.png" required>
+            <img id="addressProofPreview" class="preview" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="guardianAadharCard">Guardian Aadhar Card:</label>
+            <input type="file" id="guardianAadharCard" name="guardianAadharCard" accept=".pdf,.jpg,.jpeg,.png" required>
+            <img id="guardianAadharCardPreview" class="preview" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="diplomaOrDegreeCertificate">Diploma/Degree Certificate:</label>
+            <input type="file" id="diplomaOrDegreeCertificate" name="diplomaOrDegreeCertificate" accept=".pdf,.jpg,.jpeg,.png" required>
+            <img id="diplomaOrDegreeCertificatePreview" class="preview" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="lastSemMarksheet">Last Semester Marksheet:</label>
+            <input type="file" id="lastSemMarksheet" name="lastSemMarksheet" accept=".pdf,.jpg,.jpeg,.png" required>
+            <img id="lastSemMarksheetPreview" class="preview" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="sscMarksheet">SSC Marksheet:</label>
+            <input type="file" id="sscMarksheet" name="sscMarksheet" accept=".pdf,.jpg,.jpeg,.png" required>
+            <img id="sscMarksheetPreview" class="preview" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="hscMarksheet">HSC Marksheet:</label>
+            <input type="file" id="hscMarksheet" name="hscMarksheet" accept=".pdf,.jpg,.jpeg,.png" required>
+            <img id="hscMarksheetPreview" class="preview" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="passportSizePhoto">Passport Size Photo:</label>
+            <input type="file" id="passportSizePhoto" name="passportSizePhoto" accept=".jpg,.jpeg,.png" required>
+            <img id="passportSizePhotoPreview" class="preview" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="cancelledCheque">Cancelled Cheque:</label>
+            <input type="file" id="cancelledCheque" name="cancelledCheque" accept=".pdf,.jpg,.jpeg,.png" required>
+            <img id="cancelledChequePreview" class="preview" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="passbookFirstPage">Passbook First Page:</label>
+            <input type="file" id="passbookFirstPage" name="passbookFirstPage" accept=".pdf,.jpg,.jpeg,.png" required>
+            <img id="passbookFirstPagePreview" class="preview" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="medicalCertificate">Medical Certificate:</label>
+            <input type="file" id="medicalCertificate" name="medicalCertificate" accept=".pdf,.jpg,.jpeg,.png" required>
+            <img id="medicalCertificatePreview" class="preview" style="display: none;">
+        </div>
+
+        <button type="submit">Upload Documents</button>
+    </form>
+
+    <div class="actions">
+        <button id="viewDocuments" class="view-info">View Documents</button>
+        <button id="deleteDocuments" class="delete-btn">Delete Documents</button>
+    </div>
+
+    <div id="response">
+        <h3>Server Response:</h3>
+        <pre id="responseDetails"></pre>
+    </div>
+
+    <script>
+        // Function to handle file preview
+        function handleFilePreview(fileInput) {
+            const previewId = fileInput.id + 'Preview';
+            const preview = document.getElementById(previewId);
+            
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) {
+                    preview.style.display = 'none';
+                    return;
+                }
+
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+        }
+
+        // Add preview functionality to all file inputs
+        document.querySelectorAll('input[type="file"]').forEach(handleFilePreview);
+
+        // Handle form submission
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            
+            // Add userId
+            formData.append('userId', document.getElementById('userId').value);
+            
+            // Add all files
+            const fileInputs = this.querySelectorAll('input[type="file"]');
+            fileInputs.forEach(input => {
+                if (input.files[0]) {
+                    formData.append(input.name, input.files[0]);
+                }
+            });
+
+            try {
+                const response = await fetch('/api/documentation', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                showResponse(result);
+            } catch (error) {
+                showResponse({ success: false, message: error.message });
+            }
+        });
+
+        // Handle view documents
+        document.getElementById('viewDocuments').addEventListener('click', async function() {
+            const userId = document.getElementById('userId').value;
+            
+            try {
+                const response = await fetch(`/api/documentation/${userId}`);
+                const result = await response.json();
+                showResponse(result);
+            } catch (error) {
+                showResponse({ success: false, message: error.message });
+            }
+        });
+
+        // Handle delete documents
+        document.getElementById('deleteDocuments').addEventListener('click', async function() {
+            if (!confirm('Are you sure you want to delete all documents?')) return;
+            
+            const userId = document.getElementById('userId').value;
+            
+            try {
+                const response = await fetch(`/api/documentation/${userId}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                showResponse(result);
+            } catch (error) {
+                showResponse({ success: false, message: error.message });
+            }
+        });
+
+        // Helper function to show response
+        function showResponse(result) {
+            const response = document.getElementById('response');
+            const responseDetails = document.getElementById('responseDetails');
+            response.style.display = 'block';
+            responseDetails.innerHTML = JSON.stringify(result, null, 2);
+            responseDetails.className = result.success ? 'success' : 'error';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Education Documents Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .education-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .education-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="file"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #preview, #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        .error {
+            color: #ff0000;
+            background-color: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .success {
+            color: #008000;
+            background-color: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .file-info {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        textarea.education-data {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            white-space: pre;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h2>Education Documents Upload</h2>
+    <form id="uploadForm" action="/api/education" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId" name="userId" value="674803e8b330c3ef6486507c" readonly>
+        </div>
+        <div class="form-group">
+            <label for="educationData">Education Data:</label>
+            <textarea id="educationData" name="educationData" class="education-data" readonly>[
+  {
+    "level": "SSC",
+    "schoolName": "SSC School",
+    "passingYear": 2015,
+    "percentage": 85.5,
+    "location": "Mumbai"
+  },
+  {
+    "level": "HSC",
+    "schoolName": "HSC College",
+    "fieldOfStudy": "Science",
+    "passingYear": 2017,
+    "percentage": 82.3,
+    "location": "Mumbai"
+  },
+  {
+    "level": "DIPLOMA",
+    "collegeName": "Technical Institute",
+    "degreeName": "Diploma in Computer Engineering",
+    "passingYear": 2019,
+    "percentage": 78.9,
+    "location": "Mumbai"
+  },
+  {
+    "level": "DEGREE",
+    "collegeName": "Engineering College",
+    "degreeName": "Bachelor of Technology",
+    "passingYear": 2022,
+    "cgpa": 8.5,
+    "location": "Mumbai"
+  },
+  {
+    "level": "MASTER",
+    "collegeName": "Tech University",
+    "degreeName": "Master of Technology",
+    "passingYear": 2024,
+    "cgpa": 9.2,
+    "location": "Mumbai"
+  }
+]</textarea>
+        </div>
+
+        <!-- SSC Documents -->
+        <div class="education-section">
+            <h3>SSC Documents</h3>
+            <div class="form-group">
+                <label for="ssc_leavingCertificate">Leaving Certificate:</label>
+                <input type="file" id="ssc_leavingCertificate" name="ssc_leavingCertificate" accept=".pdf,.doc,.docx">
+                <div class="file-info">Accepted formats: PDF, DOC, DOCX (Max size: 5MB)</div>
+            </div>
+        </div>
+
+        <!-- HSC Documents -->
+        <div class="education-section">
+            <h3>HSC Documents</h3>
+            <div class="form-group">
+                <label for="hsc_leavingCertificate">Leaving Certificate:</label>
+                <input type="file" id="hsc_leavingCertificate" name="hsc_leavingCertificate" accept=".pdf,.doc,.docx">
+                <div class="file-info">Accepted formats: PDF, DOC, DOCX (Max size: 5MB)</div>
+            </div>
+        </div>
+
+        <!-- Diploma Documents -->
+        <div class="education-section">
+            <h3>Diploma Documents</h3>
+            <div class="form-group">
+                <label for="diploma_certificate">Degree Certificate:</label>
+                <input type="file" id="diploma_certificate" name="diploma_certificate" accept=".pdf,.doc,.docx">
+                <div class="file-info">Accepted formats: PDF, DOC, DOCX (Max size: 5MB)</div>
+            </div>
+            <div class="form-group">
+                <label for="diploma_marksheet">Marksheet:</label>
+                <input type="file" id="diploma_marksheet" name="diploma_marksheet" accept=".pdf,.doc,.docx">
+                <div class="file-info">Accepted formats: PDF, DOC, DOCX (Max size: 5MB)</div>
+            </div>
+        </div>
+
+        <!-- Degree Documents -->
+        <div class="education-section">
+            <h3>Degree Documents</h3>
+            <div class="form-group">
+                <label for="degree_certificate">Degree Certificate:</label>
+                <input type="file" id="degree_certificate" name="degree_certificate" accept=".pdf,.doc,.docx">
+                <div class="file-info">Accepted formats: PDF, DOC, DOCX (Max size: 5MB)</div>
+            </div>
+            <div class="form-group">
+                <label for="degree_marksheet">Marksheet:</label>
+                <input type="file" id="degree_marksheet" name="degree_marksheet" accept=".pdf,.doc,.docx">
+                <div class="file-info">Accepted formats: PDF, DOC, DOCX (Max size: 5MB)</div>
+            </div>
+        </div>
+
+        <!-- Masters Documents -->
+        <div class="education-section">
+            <h3>Masters Documents</h3>
+            <div class="form-group">
+                <label for="master_certificate">Degree Certificate:</label>
+                <input type="file" id="master_certificate" name="master_certificate" accept=".pdf,.doc,.docx">
+                <div class="file-info">Accepted formats: PDF, DOC, DOCX (Max size: 5MB)</div>
+            </div>
+            <div class="form-group">
+                <label for="master_marksheet">Marksheet:</label>
+                <input type="file" id="master_marksheet" name="master_marksheet" accept=".pdf,.doc,.docx">
+                <div class="file-info">Accepted formats: PDF, DOC, DOCX (Max size: 5MB)</div>
+            </div>
+        </div>
+
+        <button type="submit">Upload Documents</button>
+    </form>
+
+    <div id="preview">
+        <h3>Selected Files:</h3>
+        <div id="fileDetails"></div>
+    </div>
+
+    <div id="response">
+        <h3>Server Response:</h3>
+        <pre id="responseDetails"></pre>
+    </div>
+
+    <script>
+        // Function to format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Handle file selection for all file inputs
+        document.querySelectorAll('input[type="file"]').forEach(input => {
+            input.addEventListener('change', function(e) {
+                const preview = document.getElementById('preview');
+                const details = document.getElementById('fileDetails');
+                const files = Array.from(document.querySelectorAll('input[type="file"]'))
+                    .filter(input => input.files.length > 0)
+                    .map(input => ({
+                        name: input.name,
+                        file: input.files[0]
+                    }));
+                
+                if (files.length > 0) {
+                    preview.style.display = 'block';
+                    details.innerHTML = files.map(({name, file}) => `
+                        <div>
+                            <strong>${name}:</strong><br>
+                            Name: ${file.name}<br>
+                            Type: ${file.type}<br>
+                            Size: ${formatFileSize(file.size)}
+                        </div>
+                    `).join('<hr>');
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+        });
+
+        // Handle form submission
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const response = document.getElementById('response');
+            const responseDetails = document.getElementById('responseDetails');
+            
+            const formData = new FormData(this);
+            const files = Array.from(document.querySelectorAll('input[type="file"]'))
+                .filter(input => input.files.length > 0)
+                .map(input => ({
+                    name: input.name,
+                    file: input.files[0]
+                }));
+
+            if (files.length === 0) {
+                alert('Please select at least one file to upload!');
+                return;
+            }
+
+            // Log what we're sending
+            console.log('Sending files:', files.map(f => ({
+                name: f.name,
+                fileName: f.file.name,
+                type: f.file.type,
+                size: formatFileSize(f.file.size)
+            })));
+
+            fetch('/api/education', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                response.style.display = 'block';
+                responseDetails.innerHTML = JSON.stringify(data, null, 2);
+                responseDetails.className = data.success ? 'success' : 'error';
+            })
+            .catch(error => {
+                response.style.display = 'block';
+                responseDetails.innerHTML = 'Error: ' + error.message;
+                responseDetails.className = 'error';
+            });
+        });
+    </script>
+</body>
+</html>

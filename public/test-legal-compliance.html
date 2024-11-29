@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Compliance Document Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="file"] {
+            display: block;
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .preview {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .preview img {
+            max-width: 200px;
+            max-height: 200px;
+            display: block;
+            margin: 0 auto;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #dff0d8;
+            border: 1px solid #d6e9c6;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            border: 1px solid #ebccd1;
+            color: #a94442;
+        }
+        .document-links {
+            margin-top: 20px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .document-links h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .document-links a {
+            display: block;
+            margin: 10px 0;
+            color: #337ab7;
+            text-decoration: none;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .document-links a:hover {
+            background-color: #f5f5f5;
+            border-color: #337ab7;
+        }
+        .loading {
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+            color: #666;
+        }
+        .loading::after {
+            content: "...";
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60%, 100% { content: "..."; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Legal Compliance Document Upload</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId" name="userId" value="674803e8b330c3ef6486507c" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="internshipAgreement">Internship Agreement (PDF/DOC):</label>
+            <input type="file" id="internshipAgreement" name="internshipAgreement" accept=".pdf,.doc,.docx" required>
+            <div id="internshipAgreementPreview" class="preview"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="nonDisclosureAgreement">Non-Disclosure Agreement (PDF/DOC):</label>
+            <input type="file" id="nonDisclosureAgreement" name="nonDisclosureAgreement" accept=".pdf,.doc,.docx" required>
+            <div id="nonDisclosureAgreementPreview" class="preview"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="workAuthorization">Work Authorization (PDF/DOC):</label>
+            <input type="file" id="workAuthorization" name="workAuthorization" accept=".pdf,.doc,.docx" required>
+            <div id="workAuthorizationPreview" class="preview"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="digitalSignature">Digital Signature (JPG/PNG):</label>
+            <input type="file" id="digitalSignature" name="digitalSignature" accept=".jpg,.jpeg,.png" required>
+            <div id="digitalSignaturePreview" class="preview"></div>
+        </div>
+
+        <button type="submit" id="submitButton">Upload Documents</button>
+        <div class="loading">Uploading documents</div>
+    </form>
+
+    <div id="response"></div>
+    <div class="document-links" id="documentLinks" style="display: none;"></div>
+
+    <script>
+        function previewFile(file, previewId) {
+            if (!file) return;
+            
+            const preview = document.getElementById(previewId);
+            const reader = new FileReader();
+
+            reader.onloadend = function() {
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.src = reader.result;
+                    img.className = 'preview';
+                    preview.innerHTML = '';
+                    preview.appendChild(img);
+                } else {
+                    preview.innerHTML = `
+                        <div style="padding: 10px; background-color: #f8f9fa; border-radius: 4px;">
+                            <strong>${file.name}</strong>
+                            <br>
+                            <small>Size: ${(file.size / 1024).toFixed(2)} KB</small>
+                        </div>
+                    `;
+                }
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showResponse(message, isError = false) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.innerHTML = message;
+            responseDiv.className = isError ? 'error' : 'success';
+            responseDiv.style.display = 'block';
+            responseDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function displayDocumentLinks(data) {
+            const linksDiv = document.getElementById('documentLinks');
+            linksDiv.innerHTML = '<h3>📄 Uploaded Documents</h3>';
+            linksDiv.style.display = 'block';
+            
+            const documents = {
+                internshipAgreement: '📋 Internship Agreement',
+                nonDisclosureAgreement: '🤐 Non-Disclosure Agreement',
+                workAuthorization: '💼 Work Authorization',
+                digitalSignature: '✍️ Digital Signature'
+            };
+
+            for (const [key, label] of Object.entries(documents)) {
+                if (data[key]) {
+                    linksDiv.innerHTML += `
+                        <a href="${data[key]}" target="_blank">
+                            ${label}
+                            <small style="float: right;">↗️ View</small>
+                        </a>
+                    `;
+                }
+            }
+        }
+
+        // Add preview listeners for each file input
+        document.querySelectorAll('input[type="file"]').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    previewFile(file, `${e.target.id}Preview`);
+                }
+            });
+        });
+
+        // Handle form submission
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitButton = document.getElementById('submitButton');
+            const loadingDiv = document.querySelector('.loading');
+            const responseDiv = document.getElementById('response');
+            const documentLinksDiv = document.getElementById('documentLinks');
+            
+            // Reset previous response
+            responseDiv.style.display = 'none';
+            documentLinksDiv.style.display = 'none';
+            
+            // Disable submit button and show loading
+            submitButton.disabled = true;
+            loadingDiv.style.display = 'block';
+            
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch('/api/legal-compliance', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                console.log('Server response:', result);
+                
+                if (result.success) {
+                    showResponse(`
+                        <h3>✅ Upload Successful!</h3>
+                        <p>${result.message}</p>
+                    `);
+                    if (result.data) {
+                        displayDocumentLinks(result.data);
+                    }
+                } else {
+                    showResponse(`
+                        <h3>❌ Upload Failed</h3>
+                        <p>${result.message}</p>
+                        ${result.error ? `<p>Error: ${result.error}</p>` : ''}
+                    `, true);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showResponse(`
+                    <h3>❌ Upload Failed</h3>
+                    <p>An error occurred while uploading the documents.</p>
+                    <p>Error: ${error.message}</p>
+                `, true);
+            } finally {
+                submitButton.disabled = false;
+                loadingDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

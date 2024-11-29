@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Current Work Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .work-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .work-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="email"], input[type="date"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        .error {
+            color: #ff0000;
+            background-color: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .success {
+            color: #008000;
+            background-color: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .view-info {
+            background-color: #2196F3;
+        }
+        .view-info:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <h2>Current Work Information</h2>
+    
+    <!-- Add Form -->
+    <form id="addForm" class="work-section">
+        <h3>Add Current Work Info</h3>
+        <div class="form-group">
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId" name="userId" value="674803e8b330c3ef6486507c" readonly>
+        </div>
+        <div class="form-group">
+            <label for="employeeId">Employee ID:</label>
+            <input type="text" id="employeeId" name="employeeId" value="EMP001" required>
+        </div>
+        <div class="form-group">
+            <label for="workMailId">Work Email:</label>
+            <input type="email" id="workMailId" name="workMailId" value="john.doe@company.com" required>
+        </div>
+        <div class="form-group">
+            <label for="department">Department:</label>
+            <input type="text" id="department" name="department" value="Engineering" required>
+        </div>
+        <div class="form-group">
+            <label for="designation">Designation:</label>
+            <input type="text" id="designation" name="designation" value="Software Engineer" required>
+        </div>
+        <div class="form-group">
+            <label for="manager">Manager:</label>
+            <input type="text" id="manager" name="manager" value="Jane Smith" required>
+        </div>
+        <div class="form-group">
+            <label for="teamLeader">Team Leader:</label>
+            <input type="text" id="teamLeader" name="teamLeader" value="Bob Johnson" required>
+        </div>
+        <div class="form-group">
+            <label for="reportingTo">Reporting To:</label>
+            <input type="text" id="reportingTo" name="reportingTo" value="Jane Smith" required>
+        </div>
+        <div class="form-group">
+            <label for="workSchedule">Work Schedule:</label>
+            <input type="text" id="workSchedule" name="workSchedule" value="9 AM - 6 PM" required>
+        </div>
+        <div class="form-group">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate" required>
+        </div>
+        <div class="form-group">
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate">
+        </div>
+        <button type="submit">Add Work Info</button>
+    </form>
+
+    <!-- Update Form -->
+    <form id="updateForm" class="work-section" style="display: none;">
+        <h3>Update Current Work Info</h3>
+        <!-- Same fields as add form but with different IDs -->
+        <div class="form-group">
+            <label for="updateEmployeeId">Employee ID:</label>
+            <input type="text" id="updateEmployeeId" name="employeeId" required>
+        </div>
+        <div class="form-group">
+            <label for="updateWorkMailId">Work Email:</label>
+            <input type="email" id="updateWorkMailId" name="workMailId" required>
+        </div>
+        <div class="form-group">
+            <label for="updateDepartment">Department:</label>
+            <input type="text" id="updateDepartment" name="department" required>
+        </div>
+        <div class="form-group">
+            <label for="updateDesignation">Designation:</label>
+            <input type="text" id="updateDesignation" name="designation" required>
+        </div>
+        <div class="form-group">
+            <label for="updateManager">Manager:</label>
+            <input type="text" id="updateManager" name="manager" required>
+        </div>
+        <div class="form-group">
+            <label for="updateTeamLeader">Team Leader:</label>
+            <input type="text" id="updateTeamLeader" name="teamLeader" required>
+        </div>
+        <div class="form-group">
+            <label for="updateReportingTo">Reporting To:</label>
+            <input type="text" id="updateReportingTo" name="reportingTo" required>
+        </div>
+        <div class="form-group">
+            <label for="updateWorkSchedule">Work Schedule:</label>
+            <input type="text" id="updateWorkSchedule" name="workSchedule" required>
+        </div>
+        <div class="form-group">
+            <label for="updateStartDate">Start Date:</label>
+            <input type="date" id="updateStartDate" name="startDate" required>
+        </div>
+        <div class="form-group">
+            <label for="updateEndDate">End Date:</label>
+            <input type="date" id="updateEndDate" name="endDate">
+        </div>
+        <button type="submit">Update Work Info</button>
+    </form>
+
+    <div class="actions">
+        <button id="viewInfo" class="view-info">View Current Work Info</button>
+        <button id="toggleUpdate" class="view-info" style="display: none;">Update Work Info</button>
+    </div>
+
+    <div id="response">
+        <h3>Server Response:</h3>
+        <pre id="responseDetails"></pre>
+    </div>
+
+    <script>
+        // Set default dates
+        document.getElementById('startDate').value = '2024-01-01';
+        
+        // Handle add form submission
+        document.getElementById('addForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/api/current-work', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResponse(result);
+                
+                if (result.success) {
+                    document.getElementById('toggleUpdate').style.display = 'block';
+                }
+            } catch (error) {
+                showResponse({ success: false, message: error.message });
+            }
+        });
+
+        // Handle update form submission
+        document.getElementById('updateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const userId = document.getElementById('userId').value;
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch(`/api/current-work/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                showResponse(result);
+            } catch (error) {
+                showResponse({ success: false, message: error.message });
+            }
+        });
+
+        // Handle view info button click
+        document.getElementById('viewInfo').addEventListener('click', async function() {
+            const userId = document.getElementById('userId').value;
+            
+            try {
+                const response = await fetch(`/api/current-work/${userId}`);
+                const result = await response.json();
+                showResponse(result);
+                
+                if (result.success) {
+                    document.getElementById('toggleUpdate').style.display = 'block';
+                    // Populate update form
+                    const data = result.data;
+                    document.getElementById('updateEmployeeId').value = data.employeeId;
+                    document.getElementById('updateWorkMailId').value = data.workMailId;
+                    document.getElementById('updateDepartment').value = data.department;
+                    document.getElementById('updateDesignation').value = data.designation;
+                    document.getElementById('updateManager').value = data.manager;
+                    document.getElementById('updateTeamLeader').value = data.teamLeader;
+                    document.getElementById('updateReportingTo').value = data.reportingTo;
+                    document.getElementById('updateWorkSchedule').value = data.workSchedule;
+                    document.getElementById('updateStartDate').value = new Date(data.startDate).toISOString().split('T')[0];
+                    if (data.endDate) {
+                        document.getElementById('updateEndDate').value = new Date(data.endDate).toISOString().split('T')[0];
+                    }
+                }
+            } catch (error) {
+                showResponse({ success: false, message: error.message });
+            }
+        });
+
+        // Toggle between add and update forms
+        document.getElementById('toggleUpdate').addEventListener('click', function() {
+            const addForm = document.getElementById('addForm');
+            const updateForm = document.getElementById('updateForm');
+            
+            if (addForm.style.display !== 'none') {
+                addForm.style.display = 'none';
+                updateForm.style.display = 'block';
+                this.textContent = 'Show Add Form';
+            } else {
+                addForm.style.display = 'block';
+                updateForm.style.display = 'none';
+                this.textContent = 'Show Update Form';
+            }
+        });
+
+        // Helper function to show response
+        function showResponse(result) {
+            const response = document.getElementById('response');
+            const responseDetails = document.getElementById('responseDetails');
+            response.style.display = 'block';
+            responseDetails.innerHTML = JSON.stringify(result, null, 2);
+            responseDetails.className = result.success ? 'success' : 'error';
+        }
+    </script>
+</body>
+</html>

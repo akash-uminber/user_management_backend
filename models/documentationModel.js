@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const documentationSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
   resume: { type: String, required: true },
   idProof: { type: String, required: true },
   addressProof: { type: String, required: true },
