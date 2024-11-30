@@ -1,6 +1,7 @@
 const Documentation = require('../models/documentationModel');
 const PersonalInfo = require('../models/personalInfoModel');
 const CurrentWorkInfo = require('../models/currentWorkInfoModel');
+const UserStatus = require('../models/userStatusModel');
 
 // Helper function to generate username
 const generateUsername = (fullName, employeeId) => {
@@ -52,14 +53,19 @@ exports.getUserHistory = async (req, res) => {
                     employeeId: '$workInfo.employeeId',
                     workEmail: '$workInfo.workMailId',
                     department: '$workInfo.department',
-                    designation: '$workInfo.designation'
+                    designation: '$workInfo.designation',
+                    status: { 
+                        $ifNull: ['$workInfo.status', 'active']
+                    }
                 }
             },
             // Sort by employeeId
             {
-                $sort: { 'workInfo.employeeId': 1 }
+                $sort: { 'employeeId': 1 }
             }
         ]);
+
+        console.log('Raw aggregation result:', JSON.stringify(users, null, 2));
 
         // Transform the data to add serial numbers and generate usernames
         const userHistory = users.map((user, index) => ({
@@ -71,7 +77,8 @@ exports.getUserHistory = async (req, res) => {
             contact: user.contact,
             workEmail: user.workEmail,
             department: user.department,
-            designation: user.designation
+            designation: user.designation,
+            status: user.status
         }));
 
         res.status(200).json({
@@ -85,8 +92,7 @@ exports.getUserHistory = async (req, res) => {
         console.error('Error fetching user history:', error);
         res.status(500).json({
             success: false,
-            message: 'Error fetching user history',
-            error: error.message
+            message: error.message || 'Error fetching user history'
         });
     }
 };
@@ -123,6 +129,9 @@ exports.getUserHistoryById = async (req, res) => {
             });
         }
 
+        // Get user's status
+        const userStatus = await UserStatus.findOne({ userId });
+
         // Combine the data
         const userHistory = {
             srNo: 1,
@@ -133,7 +142,8 @@ exports.getUserHistoryById = async (req, res) => {
             contact: personalInfo.contact,
             workEmail: workInfo.workMailId,
             department: workInfo.department,
-            designation: workInfo.designation
+            designation: workInfo.designation,
+            status: userStatus ? userStatus.status : 'active'
         };
 
         res.status(200).json({

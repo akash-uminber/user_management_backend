@@ -20,6 +20,43 @@ exports.addCurrentWorkInfo = async (req, res) => {
       });
     }
 
+    // Check if user exists
+    const user = await User.findById(req.body.userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check for existing records with unique fields
+    const [existingUserId, existingEmployeeId, existingWorkMailId] = await Promise.all([
+      CurrentWorkInfo.findOne({ userId: req.body.userId }),
+      CurrentWorkInfo.findOne({ employeeId: req.body.employeeId }),
+      CurrentWorkInfo.findOne({ workMailId: req.body.workMailId })
+    ]);
+
+    if (existingUserId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current work information already exists for this user'
+      });
+    }
+
+    if (existingEmployeeId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Employee ID is already in use'
+      });
+    }
+
+    if (existingWorkMailId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Work Mail ID is already in use'
+      });
+    }
+
     // Convert form data to work data object
     const workData = {
       userId: req.body.userId,
@@ -32,29 +69,12 @@ exports.addCurrentWorkInfo = async (req, res) => {
       reportingTo: req.body.reportingTo,
       workSchedule: req.body.workSchedule,
       startDate: new Date(req.body.startDate),
-      endDate: req.body.endDate ? new Date(req.body.endDate) : undefined
+      endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
+      status: req.body.status || 'active'
     };
 
-    // Check if user exists
-    const user = await User.findById(workData.userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    // Check if current work info already exists
-    let currentWorkInfo = await CurrentWorkInfo.findOne({ userId: workData.userId });
-    if (currentWorkInfo) {
-      return res.status(400).json({
-        success: false,
-        message: 'Current work information already exists for this user'
-      });
-    }
-
     // Create new current work info
-    currentWorkInfo = new CurrentWorkInfo(workData);
+    const currentWorkInfo = new CurrentWorkInfo(workData);
     await currentWorkInfo.save();
 
     // Update user's form progress
@@ -70,6 +90,20 @@ exports.addCurrentWorkInfo = async (req, res) => {
 
   } catch (error) {
     console.error('Error in addCurrentWorkInfo:', error);
+    
+    // Handle specific MongoDB duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      const fieldName = field === 'userId' ? 'user' : 
+                       field === 'employeeId' ? 'employee ID' : 
+                       field === 'workMailId' ? 'work mail ID' : field;
+      return res.status(400).json({
+        success: false,
+        message: `This ${fieldName} is already in use`,
+        error: error.message
+      });
+    }
+
     res.status(400).json({
       success: false,
       message: 'Error adding current work information',
@@ -99,11 +133,12 @@ exports.getCurrentWorkInfo = async (req, res) => {
       success: true,
       data: currentWorkInfo
     });
+
   } catch (error) {
     console.error('Error in getCurrentWorkInfo:', error);
     res.status(400).json({
       success: false,
-      message: 'Error retrieving current work information',
+      message: 'Error fetching current work information',
       error: error.message
     });
   }
@@ -166,6 +201,17 @@ exports.updateCurrentWorkInfo = async (req, res) => {
 
   } catch (error) {
     console.error('Error in updateCurrentWorkInfo:', error);
+    
+    // Handle specific MongoDB duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        success: false,
+        message: `This ${field} is already in use`,
+        error: error.message
+      });
+    }
+
     res.status(400).json({
       success: false,
       message: 'Error updating current work information',

@@ -9,6 +9,8 @@ const path = require('path');
 const documentationRoutes = require('./routes/documentationRoutes');
 const legalComplianceRoutes = require('./routes/legalComplianceRoutes');
 const userHistoryRoutes = require('./routes/userHistoryRoutes');
+const userStatusRoutes = require('./routes/userStatusRoutes');
+const employeeReportRoutes = require('./routes/employeeReportRoutes');
 
 const app = express();
 
@@ -59,6 +61,8 @@ app.use('/api', routes);
 app.use('/api/documentation', documentationRoutes);
 app.use('/api/legal-compliance', legalComplianceRoutes);
 app.use('/api/user-history', userHistoryRoutes);
+app.use('/api/user-status', userStatusRoutes);
+app.use('/api/reports', employeeReportRoutes);
 console.log('🛣️  Routes mounted at /api');
 
 // 404 handler

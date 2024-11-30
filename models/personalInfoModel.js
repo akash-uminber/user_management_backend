@@ -16,8 +16,21 @@ const personalInfoSchema = new mongoose.Schema({
   maritalStatus: { type: String, required: true, enum: ['Single', 'Married', 'Divorced', 'Widowed'] },
   hobbies: [{ type: String }],
   gender: { type: String, required: true, enum: ['Male', 'Female', 'Other'] },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+  status: { type: String, enum: ['active', 'resigned', 'suspended', 'terminated'], default: 'active' },
+  suspensionDetails: {
+    fromDate: Date,
+    toDate: Date,
+    reason: String
+  }
 }, { timestamps: true });
+
+// Remove any existing indexes
+personalInfoSchema.indexes().forEach(index => {
+  if (index[0].user === 1) {
+    personalInfoSchema.index({ user: 1 }, { unique: false, sparse: true });
+  }
+});
 
 const PersonalInfo = mongoose.model('PersonalInfo', personalInfoSchema);
 

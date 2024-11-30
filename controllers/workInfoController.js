@@ -1,6 +1,7 @@
 const WorkInfo = require('../models/workInfoModel');
 const { User } = require('../models/userModel');
 const cloudinary = require('../config/cloudinary');
+const fs = require('fs');
 
 exports.addWorkExperience = async (req, res) => {
   try {
@@ -47,77 +48,87 @@ exports.addWorkExperience = async (req, res) => {
       });
     }
 
-    // Check if experience letter is provided
-    if (!req.files || !req.files.experienceLetter) {
-      return res.status(400).json({
-        success: false,
-        message: 'Experience letter is required'
-      });
-    }
-
-    // Find or create work info document
+    // Get or create work info document for user
     let workInfo = await WorkInfo.findOne({ userId });
     if (!workInfo) {
       workInfo = new WorkInfo({
         userId,
-        workExperiences: []
+        workExperiences: [],
+        status: 'active'
       });
     }
 
     // Process each work experience
     for (const experience of parsedWorkData) {
-      const file = req.files.experienceLetter[0];
-      console.log('📄 Experience Letter File:', file);
+      // Check if experience letter is provided
+      if (req.files && req.files.experienceLetter) {
+        console.log('📄 Experience Letter File:', req.files.experienceLetter[0]);
 
-      try {
-        const result = await cloudinary.uploader.upload(file.path, {
-          folder: `work_documents/${userId}/experience_letters`,
-          resource_type: 'auto'
-        });
-
+        // Upload to Cloudinary
+        const result = await cloudinary.uploader.upload(
+          req.files.experienceLetter[0].path,
+          {
+            folder: `work_documents/${userId}/experience_letters`,
+            resource_type: 'auto'
+          }
+        );
         console.log('☁️ Cloudinary Upload Result:', result);
 
-        // Add work experience entry with experience letter URL
-        const workEntry = {
-          ...experience,
-          experienceLetter: result.secure_url
+        // Add document URL to experience
+        experience.experienceLetter = result.secure_url;
+
+        // Clean up local file
+        fs.unlinkSync(req.files.experienceLetter[0].path);
+      }
+
+      // Find existing experience with same company and dates
+      const existingIndex = workInfo.workExperiences.findIndex(exp => 
+        exp.companyName === experience.companyName &&
+        new Date(exp.startDate).getTime() === new Date(experience.startDate).getTime() &&
+        new Date(exp.endDate).getTime() === new Date(experience.endDate).getTime()
+      );
+
+      if (existingIndex !== -1) {
+        // Update existing experience
+        workInfo.workExperiences[existingIndex] = {
+          ...workInfo.workExperiences[existingIndex].toObject(),
+          ...experience
         };
-
-        // Convert date strings to Date objects
-        if (workEntry.startDate) {
-          workEntry.startDate = new Date(workEntry.startDate);
-        }
-        if (workEntry.endDate) {
-          workEntry.endDate = new Date(workEntry.endDate);
-        }
-
-        workInfo.workExperiences.push(workEntry);
-      } catch (error) {
-        console.error('❌ Error uploading to Cloudinary:', error);
-        return res.status(500).json({
-          success: false,
-          message: 'Error uploading experience letter',
-          error: error.message
-        });
+      } else {
+        // Add new experience
+        workInfo.workExperiences.push(experience);
       }
     }
 
+    // Save work info
     await workInfo.save();
 
     // Update user's form progress
     await User.findByIdAndUpdate(userId, {
-      formProgress: 'completed'
+      formProgress: 'documentation'
     });
 
     res.status(201).json({
       success: true,
-      message: 'Work experience information added successfully',
+      message: 'Work experience added successfully',
       data: workInfo
     });
 
   } catch (error) {
     console.error('❌ Error in addWorkExperience:', error);
-    res.status(500).json({
+
+    // Clean up any uploaded files if there's an error
+    if (req.files) {
+      Object.values(req.files).forEach(fileArray => {
+        fileArray.forEach(file => {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        });
+      });
+    }
+
+    res.status(400).json({
       success: false,
       message: 'Error adding work experience',
       error: error.message

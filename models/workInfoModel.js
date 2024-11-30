@@ -29,37 +29,18 @@ const workExperienceSchema = new mongoose.Schema({
   workExperience: { 
     type: Number, 
     required: true,
-    min: 0,
-    validate: {
-      validator: function(v) {
-        return v >= 0;
-      },
-      message: 'Work experience cannot be negative'
-    }
+    min: 0
   },
   startDate: { 
     type: Date, 
-    required: true,
-    validate: {
-      validator: function(v) {
-        return v <= new Date();
-      },
-      message: 'Start date cannot be in the future'
-    }
+    required: true
   },
   endDate: { 
-    type: Date, 
-    required: true,
-    validate: {
-      validator: function(v) {
-        return v <= new Date() && v >= this.startDate;
-      },
-      message: 'End date must be after start date and cannot be in the future'
-    }
+    type: Date,
+    required: true
   },
   experienceLetter: { 
-    type: String, 
-    required: true 
+    type: String
   }
 });
 
@@ -70,39 +51,57 @@ const workInfoSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  workExperiences: [workExperienceSchema]
-}, { timestamps: true });
-
-// Custom validation middleware
-workExperienceSchema.pre('save', function(next) {
-  const experience = this;
-  
-  try {
-    // Basic validations
-    if (!experience.companyName || !experience.location || !experience.department ||
-        !experience.designation || !experience.managerName) {
-      throw new Error('All fields are required');
-    }
-
-    // Salary validation
-    if (experience.salary <= 0) {
-      throw new Error('Salary must be greater than 0');
-    }
-
-    // Experience validation
-    if (experience.workExperience < 0) {
-      throw new Error('Work experience cannot be negative');
-    }
-
-    // Document validation
-    if (!experience.experienceLetter) {
-      throw new Error('Experience letter is required');
-    }
-
-    next();
-  } catch (error) {
-    next(error);
+  workExperiences: [workExperienceSchema],
+  status: { 
+    type: String, 
+    enum: ['active', 'resigned', 'suspended', 'terminated'], 
+    default: 'active' 
+  },
+  suspensionDetails: {
+    fromDate: Date,
+    toDate: Date,
+    reason: String
   }
+}, { 
+  timestamps: true,
+  strict: true 
+});
+
+// First, let's drop the problematic index if it exists
+const dropIndex = async () => {
+  try {
+    await mongoose.connection.collection('workinfos').dropIndex('user_1');
+    console.log('Successfully dropped the problematic index');
+  } catch (error) {
+    console.log('Index might not exist, continuing...');
+  }
+};
+
+dropIndex();
+
+// Create a unique index on userId
+workInfoSchema.index({ userId: 1 }, { unique: true });
+
+// Add validation to ensure valid dates
+workInfoSchema.path('workExperiences').validate(function(experiences) {
+  if (!experiences || experiences.length === 0) return true;
+  
+  for (const exp of experiences) {
+    const startDate = new Date(exp.startDate);
+    const endDate = new Date(exp.endDate);
+    const now = new Date();
+
+    if (startDate > now) {
+      throw new Error('Start date cannot be in the future');
+    }
+    if (endDate > now) {
+      throw new Error('End date cannot be in the future');
+    }
+    if (startDate > endDate) {
+      throw new Error('Start date must be before end date');
+    }
+  }
+  return true;
 });
 
 const WorkInfo = mongoose.model('WorkInfo', workInfoSchema);

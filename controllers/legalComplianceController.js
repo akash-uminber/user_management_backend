@@ -1,4 +1,5 @@
 const LegalCompliance = require('../models/legalComplianceModel');
+const { User } = require('../models/userModel');
 const cloudinary = require('cloudinary').v2;
 
 exports.uploadDocuments = async (req, res) => {
@@ -11,6 +12,24 @@ exports.uploadDocuments = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'User ID is required'
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if documents already exist for this user
+    const existingDocs = await LegalCompliance.findOne({ userId });
+    if (existingDocs) {
+      return res.status(400).json({
+        success: false,
+        message: 'Legal compliance documents already exist for this user. Please use update endpoint.'
       });
     }
 
@@ -38,22 +57,26 @@ exports.uploadDocuments = async (req, res) => {
       });
     }
 
-    // Create or update legal compliance document
+    // Create new legal compliance document
     console.log('Saving document URLs to database...');
-    const legalCompliance = await LegalCompliance.findOneAndUpdate(
-      { userId },
-      {
-        userId,
-        internshipAgreement: documentUrls.internshipAgreement,
-        nonDisclosureAgreement: documentUrls.nonDisclosureAgreement,
-        workAuthorization: documentUrls.workAuthorization,
-        digitalSignature: documentUrls.digitalSignature
-      },
-      { upsert: true, new: true }
-    );
+    const legalCompliance = new LegalCompliance({
+      userId,
+      internshipAgreement: documentUrls.internshipAgreement,
+      nonDisclosureAgreement: documentUrls.nonDisclosureAgreement,
+      workAuthorization: documentUrls.workAuthorization,
+      digitalSignature: documentUrls.digitalSignature,
+      status: 'active'
+    });
+
+    await legalCompliance.save();
+
+    // Update user's form progress
+    await User.findByIdAndUpdate(userId, {
+      formProgress: 'legal_completed'
+    });
 
     console.log('Documents saved successfully:', legalCompliance);
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
       message: 'Legal compliance documents uploaded successfully',
       data: {
@@ -66,7 +89,37 @@ exports.uploadDocuments = async (req, res) => {
 
   } catch (error) {
     console.error('Error in uploadDocuments:', error);
-    return res.status(500).json({
+
+    // Handle specific MongoDB duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      const fieldName = field === 'userId' ? 'user' : field;
+      return res.status(400).json({
+        success: false,
+        message: `This ${fieldName} already has legal compliance documents`,
+        error: error.message
+      });
+    }
+
+    // If there's an error, attempt to delete uploaded files from Cloudinary
+    if (req.cloudinaryUrls) {
+      try {
+        const publicIds = Object.values(req.cloudinaryUrls).map(url => {
+          const parts = url.split('/');
+          const filename = parts[parts.length - 1];
+          return `legal_documents/${filename.split('.')[0]}`;
+        });
+
+        await Promise.all(publicIds.map(publicId => 
+          cloudinary.uploader.destroy(publicId)
+        ));
+        console.log('Cleaned up Cloudinary files after error');
+      } catch (cleanupError) {
+        console.error('Error cleaning up Cloudinary files:', cleanupError);
+      }
+    }
+
+    return res.status(400).json({
       success: false,
       message: 'Error uploading legal compliance documents',
       error: error.message

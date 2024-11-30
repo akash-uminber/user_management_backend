@@ -91,17 +91,55 @@ const educationSchema = new mongoose.Schema({
 });
 
 const educationInfoSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+  userId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User', 
     required: true,
     unique: true
   },
-  educations: [educationSchema]
-}, { timestamps: true });
+  educations: [educationSchema],
+  status: { 
+    type: String, 
+    enum: ['active', 'resigned', 'suspended', 'terminated'], 
+    default: 'active' 
+  },
+  suspensionDetails: {
+    fromDate: Date,
+    toDate: Date,
+    reason: String
+  }
+}, { 
+  timestamps: true,
+  strict: true 
+});
 
-// Add index for userId
-educationInfoSchema.index({ userId: 1 });
+// First, let's drop the problematic index if it exists
+const dropIndex = async () => {
+  try {
+    await mongoose.connection.collection('educationinfos').dropIndex('educations.userId_1_educations.level_1');
+    console.log('Successfully dropped the problematic index');
+  } catch (error) {
+    console.log('Index might not exist, continuing...');
+  }
+};
+
+dropIndex();
+
+// Create a unique compound index on userId only
+educationInfoSchema.index({ userId: 1 }, { unique: true });
+
+// Add validation to ensure unique education levels within the array
+educationInfoSchema.pre('save', function(next) {
+  const levels = new Set();
+  for (const education of this.educations) {
+    if (levels.has(education.level)) {
+      next(new Error(`Duplicate education level found: ${education.level}`));
+      return;
+    }
+    levels.add(education.level);
+  }
+  next();
+});
 
 // Custom validation middleware
 educationSchema.pre('save', function(next) {

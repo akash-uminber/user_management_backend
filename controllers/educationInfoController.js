@@ -1,40 +1,19 @@
 const EducationInfo = require('../models/educationInfoModel');
 const { User } = require('../models/userModel');
 const cloudinary = require('../config/cloudinary');
+const fs = require('fs');
 
 exports.addEducation = async (req, res) => {
+  console.log('Files in request:', req.files);
+  
   try {
     const { userId, educationData } = req.body;
     
-    if (!userId || !educationData) {
+    // Validate userId
+    if (!userId) {
       return res.status(400).json({
         success: false,
-        message: 'userId and educationData are required'
-      });
-    }
-
-    // Parse educationData if it's a string
-    let parsedEducationData;
-    try {
-      if (typeof educationData === 'string') {
-        // Clean the string before parsing
-        const cleanedData = educationData.trim().replace(/}\s*]}\s*$/, '}]');
-        parsedEducationData = JSON.parse(cleanedData);
-      } else {
-        parsedEducationData = educationData;
-      }
-
-      // Ensure it's an array
-      if (!Array.isArray(parsedEducationData)) {
-        parsedEducationData = [parsedEducationData];
-      }
-    } catch (error) {
-      console.error('Error parsing educationData:', error);
-      console.log('Received educationData:', educationData);
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid educationData format',
-        error: error.message
+        message: 'userId is required'
       });
     }
 
@@ -47,141 +26,157 @@ exports.addEducation = async (req, res) => {
       });
     }
 
-    // Log received files
-    console.log('Files in request:', req.files);
-    if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No files were uploaded'
-      });
-    }
-
-    // Find or create education info document
-    let educationInfo = await EducationInfo.findOne({ userId });
-    if (!educationInfo) {
-      educationInfo = new EducationInfo({
+    const educationEntries = JSON.parse(educationData);
+    let userEducation = await EducationInfo.findOne({ userId });
+    
+    // If no document exists for this user, create one
+    if (!userEducation) {
+      userEducation = new EducationInfo({
         userId,
-        educations: []
+        educations: [],
+        status: 'active'
       });
     }
 
-    // Process each education level
-    for (const education of parsedEducationData) {
+    for (const education of educationEntries) {
+      console.log(`Processing education level: ${education.level}`);
+      
+      // Find existing education entry index
+      const existingIndex = userEducation.educations.findIndex(
+        edu => edu.level === education.level
+      );
+      
       const documents = {};
-      const level = education.level.toUpperCase(); // Ensure uppercase for enum matching
-      console.log(`Processing education level: ${level}`);
 
-      try {
-        // Validate required files based on education level
-        if (['SSC', 'HSC'].includes(level)) {
-          const prefix = level.toLowerCase() + '_';
-          const leavingCertFile = req.files[prefix + 'leavingCertificate']?.[0];
-          console.log(`${level} - Looking for file: ${prefix}leavingCertificate`, leavingCertFile ? 'Found' : 'Not found');
-          
-          if (!leavingCertFile) {
-            throw new Error(`${level} requires leaving certificate file (${prefix}leavingCertificate)`);
+      // Handle SSC and HSC documents
+      if (education.level === 'SSC' || education.level === 'HSC') {
+        const certificateField = `${education.level.toLowerCase()}_leavingCertificate`;
+        
+        if (req.files[certificateField]) {
+          // Delete existing document from Cloudinary if it exists
+          if (existingIndex !== -1 && userEducation.educations[existingIndex].documents?.leavingCertificate) {
+            const publicId = userEducation.educations[existingIndex].documents.leavingCertificate.split('/').slice(-1)[0].split('.')[0];
+            try {
+              await cloudinary.uploader.destroy(publicId);
+            } catch (error) {
+              console.error(`Error deleting document from Cloudinary:`, error);
+            }
           }
 
-          console.log(`Uploading ${level} leaving certificate to Cloudinary...`);
-          const result = await cloudinary.uploader.upload(leavingCertFile.path, {
-            folder: `education_documents/${userId}/${level.toLowerCase()}`,
+          console.log(`Uploading ${education.level} leaving certificate to Cloudinary...`);
+          const result = await cloudinary.uploader.upload(req.files[certificateField][0].path, {
+            folder: `education_documents/${userId}/${education.level.toLowerCase()}`,
             resource_type: 'auto'
           });
           documents.leavingCertificate = result.secure_url;
-          console.log(`${level} leaving certificate uploaded successfully`);
-        } 
-        else if (['DIPLOMA', 'DEGREE', 'MASTER'].includes(level)) {
-          const prefix = level.toLowerCase() + '_';
-          const marksheetFile = req.files[prefix + 'marksheet']?.[0];
-          const certificateFile = req.files[prefix + 'certificate']?.[0];
-          console.log(`${level} - Looking for files:`, {
-            marksheet: marksheetFile ? 'Found' : 'Not found',
-            certificate: certificateFile ? 'Found' : 'Not found'
-          });
-
-          if (!marksheetFile) {
-            throw new Error(`${level} requires marksheet file (${prefix}marksheet)`);
+          
+          // Delete local file
+          fs.unlinkSync(req.files[certificateField][0].path);
+        } else if (existingIndex !== -1 && userEducation.educations[existingIndex].documents?.leavingCertificate) {
+          // Keep existing document if no new one is uploaded
+          documents.leavingCertificate = userEducation.educations[existingIndex].documents.leavingCertificate;
+        }
+      } 
+      // Handle DIPLOMA, DEGREE, and MASTER documents
+      else if (['DIPLOMA', 'DEGREE', 'MASTER'].includes(education.level)) {
+        const marksheetField = `${education.level.toLowerCase()}_marksheet`;
+        const certificateField = `${education.level.toLowerCase()}_certificate`;
+        
+        if (req.files[marksheetField]) {
+          // Delete existing marksheet from Cloudinary if it exists
+          if (existingIndex !== -1 && userEducation.educations[existingIndex].documents?.marksheet) {
+            const publicId = userEducation.educations[existingIndex].documents.marksheet.split('/').slice(-1)[0].split('.')[0];
+            try {
+              await cloudinary.uploader.destroy(publicId);
+            } catch (error) {
+              console.error(`Error deleting marksheet from Cloudinary:`, error);
+            }
           }
 
-          if (!certificateFile) {
-            throw new Error(`${level} requires certificate file (${prefix}certificate)`);
-          }
-
-          // Upload marksheet
-          console.log(`Uploading ${level} marksheet to Cloudinary...`);
-          const marksheetResult = await cloudinary.uploader.upload(marksheetFile.path, {
-            folder: `education_documents/${userId}/${level.toLowerCase()}`,
+          console.log(`Uploading ${education.level} marksheet to Cloudinary...`);
+          const marksheetResult = await cloudinary.uploader.upload(req.files[marksheetField][0].path, {
+            folder: `education_documents/${userId}/${education.level.toLowerCase()}`,
             resource_type: 'auto'
           });
           documents.marksheet = marksheetResult.secure_url;
-          console.log(`${level} marksheet uploaded successfully`);
+          
+          // Delete local file
+          fs.unlinkSync(req.files[marksheetField][0].path);
+        } else if (existingIndex !== -1 && userEducation.educations[existingIndex].documents?.marksheet) {
+          // Keep existing marksheet if no new one is uploaded
+          documents.marksheet = userEducation.educations[existingIndex].documents.marksheet;
+        }
 
-          // Upload certificate
-          console.log(`Uploading ${level} certificate to Cloudinary...`);
-          const certificateResult = await cloudinary.uploader.upload(certificateFile.path, {
-            folder: `education_documents/${userId}/${level.toLowerCase()}`,
+        if (req.files[certificateField]) {
+          // Delete existing certificate from Cloudinary if it exists
+          if (existingIndex !== -1 && userEducation.educations[existingIndex].documents?.degreeCertificate) {
+            const publicId = userEducation.educations[existingIndex].documents.degreeCertificate.split('/').slice(-1)[0].split('.')[0];
+            try {
+              await cloudinary.uploader.destroy(publicId);
+            } catch (error) {
+              console.error(`Error deleting certificate from Cloudinary:`, error);
+            }
+          }
+
+          console.log(`Uploading ${education.level} certificate to Cloudinary...`);
+          const certificateResult = await cloudinary.uploader.upload(req.files[certificateField][0].path, {
+            folder: `education_documents/${userId}/${education.level.toLowerCase()}`,
             resource_type: 'auto'
           });
           documents.degreeCertificate = certificateResult.secure_url;
-          console.log(`${level} certificate uploaded successfully`);
+          
+          // Delete local file
+          fs.unlinkSync(req.files[certificateField][0].path);
+        } else if (existingIndex !== -1 && userEducation.educations[existingIndex].documents?.degreeCertificate) {
+          // Keep existing certificate if no new one is uploaded
+          documents.degreeCertificate = userEducation.educations[existingIndex].documents.degreeCertificate;
         }
+      }
 
-        // Add education entry with documents
-        const educationEntry = {
-          ...education,
-          level: level,
-          documents: documents
-        };
-        console.log(`Created education entry for ${level}:`, educationEntry);
+      const educationEntry = {
+        ...education,
+        documents
+      };
 
-        // Find existing education with same level
-        const existingIndex = educationInfo.educations.findIndex(
-          e => e.level === level
-        );
-
-        if (existingIndex !== -1) {
-          // Update existing education
-          educationInfo.educations[existingIndex] = educationEntry;
-          console.log(`Updated existing ${level} education entry`);
-        } else {
-          // Add new education
-          educationInfo.educations.push(educationEntry);
-          console.log(`Added new ${level} education entry`);
-        }
-      } catch (error) {
-        console.error(`Error processing ${level} education:`, error);
-        return res.status(400).json({
-          success: false,
-          message: `Error processing ${level} education`,
-          error: error.message
-        });
+      // Update or add education entry
+      if (existingIndex !== -1) {
+        userEducation.educations[existingIndex] = educationEntry;
+      } else {
+        userEducation.educations.push(educationEntry);
       }
     }
 
-    // Save the updated education info
-    console.log('Saving education info to database...');
-    await educationInfo.save();
-    console.log('Education info saved successfully');
+    // Save the updated document
+    await userEducation.save();
 
     // Update user's form progress
-    console.log('Updating user form progress...');
     await User.findByIdAndUpdate(userId, {
-      formProgress: 'education_completed'
+      formProgress: 'documentation'
     });
-    console.log('User form progress updated successfully');
 
     res.status(201).json({
       success: true,
-      message: 'Education information added successfully',
-      data: educationInfo
+      message: 'Education information saved successfully',
+      data: userEducation
     });
 
   } catch (error) {
     console.error('Error in addEducation:', error);
+    
+    // Clean up any uploaded files if there's an error
+    if (req.files) {
+      Object.values(req.files).forEach(fileArray => {
+        fileArray.forEach(file => {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        });
+      });
+    }
+
     res.status(400).json({
       success: false,
-      message: 'Error adding education information',
-      error: error.message
+      message: error.message || 'Error saving education information'
     });
   }
 };

@@ -1,5 +1,6 @@
 const Documentation = require('../models/documentationModel');
 const { User } = require('../models/userModel');
+const fs = require('fs');
 
 exports.uploadDocuments = async (req, res) => {
   try {
@@ -14,6 +15,34 @@ exports.uploadDocuments = async (req, res) => {
       });
     }
 
+    // Check if documentation already exists for this user
+    const existingDoc = await Documentation.findOne({ userId: req.body.userId });
+    if (existingDoc) {
+      return res.status(400).json({
+        success: false,
+        message: 'Documentation already exists for this user. Please use update endpoint.'
+      });
+    }
+
+    // Validate required documents
+    const requiredDocuments = [
+      'resume', 'idProof', 'addressProof', 'guardianAadharCard',
+      'diplomaOrDegreeCertificate', 'lastSemMarksheet', 'sscMarksheet',
+      'hscMarksheet', 'passportSizePhoto', 'cancelledCheque',
+      'passbookFirstPage', 'medicalCertificate'
+    ];
+
+    const missingDocuments = requiredDocuments.filter(doc => 
+      !req.files || !req.files[doc] || !req.files[doc][0]
+    );
+
+    if (missingDocuments.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Missing required documents: ${missingDocuments.join(', ')}`
+      });
+    }
+
     // Create document paths object from uploaded files
     const documentPaths = {};
     if (req.files) {
@@ -25,17 +54,12 @@ exports.uploadDocuments = async (req, res) => {
       });
     }
 
-    let documentation = await Documentation.findOne({ userId: req.body.userId });
-    if (documentation) {
-      // Update existing documentation
-      Object.assign(documentation, documentPaths);
-    } else {
-      // Create new documentation
-      documentation = new Documentation({
-        userId: req.body.userId,
-        ...documentPaths
-      });
-    }
+    // Create new documentation
+    const documentation = new Documentation({
+      userId: req.body.userId,
+      ...documentPaths,
+      status: 'active'
+    });
     
     await documentation.save();
 
@@ -44,13 +68,37 @@ exports.uploadDocuments = async (req, res) => {
       formProgress: 'documentation_completed'
     });
 
-    res.status(200).json({ 
+    res.status(201).json({ 
       success: true,
       message: 'Documents uploaded successfully', 
       data: documentation
     });
+
   } catch (error) {
     console.error('Error in uploadDocuments:', error);
+
+    // Clean up uploaded files in case of error
+    if (req.files) {
+      Object.values(req.files).forEach(fileArray => {
+        fileArray.forEach(file => {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        });
+      });
+    }
+
+    // Handle specific MongoDB duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      const fieldName = field === 'userId' ? 'user' : field;
+      return res.status(400).json({
+        success: false,
+        message: `This ${fieldName} already has documentation`,
+        error: error.message
+      });
+    }
+
     res.status(400).json({ 
       success: false,
       message: 'Error uploading documents', 
