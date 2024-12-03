@@ -18,6 +18,8 @@ router.get('/test', (req, res) => {
 router.post('/login', authController.login);
 router.post('/register', photoUpload, authController.register);
 router.post('/verify-otp', authController.verifyOTP);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password/:token', authController.resetPassword);
 
 // Personal Information routes
 router.post("/personal-info", personalInfoController.addPersonalInfo);
