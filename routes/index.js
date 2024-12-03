@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/upload');
+const photoUpload = require('../middleware/photoUpload');
 
 const authController = require('../controllers/authController');
 const personalInfoController = require('../controllers/personalInfoController');
@@ -15,7 +16,7 @@ router.get('/test', (req, res) => {
 
 // Auth routes
 router.post('/login', authController.login);
-router.post('/register', authController.register);
+router.post('/register', photoUpload, authController.register);
 router.post('/verify-otp', authController.verifyOTP);
 
 // Personal Information routes

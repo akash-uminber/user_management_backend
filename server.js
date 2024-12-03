@@ -11,6 +11,7 @@ const legalComplianceRoutes = require('./routes/legalComplianceRoutes');
 const userHistoryRoutes = require('./routes/userHistoryRoutes');
 const userStatusRoutes = require('./routes/userStatusRoutes');
 const employeeReportRoutes = require('./routes/employeeReportRoutes');
+const multer = require('multer');
 
 const app = express();
 
@@ -35,6 +36,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Add multer middleware for handling multipart/form-data
+const upload = multer();
+
 // Debug middleware - log all requests
 app.use((req, res, next) => {
   console.log(`📥 ${new Date().toISOString()} - ${req.method} ${req.url}`);
@@ -53,10 +57,7 @@ app.get('/test-upload', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'test.html'));
 });
 
-// Register route directly in server.js
-app.post('/api/register', authController.register);
-
-// Mount other routes
+// Mount all routes under /api
 app.use('/api', routes);
 app.use('/api/documentation', documentationRoutes);
 app.use('/api/legal-compliance', legalComplianceRoutes);
@@ -93,7 +94,6 @@ app.listen(PORT, () => {
   console.log(`📍 API endpoint: http://localhost:${PORT}/api`);
   console.log(`📝 Test endpoints:`);
   console.log(`   GET  http://localhost:${PORT}/test`);
-  console.log(`   POST http://localhost:${PORT}/api/register`);
   console.log(`   GET  http://localhost:${PORT}/test-upload`);
 });
 

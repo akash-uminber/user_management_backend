@@ -49,6 +49,25 @@ const upload = multer({
   }
 }).fields(DOCUMENT_FIELDS);
 
+// Function to get upload options based on file type
+const getUploadOptions = (file, userId, fieldName) => {
+  const uploadOptions = {
+    folder: `legal_compliance/${userId}`,
+    resource_type: file.mimetype === 'application/pdf' ? 'raw' : 'image',
+    public_id: `${fieldName}_${Date.now()}`,
+    use_filename: true,
+    type: 'upload'
+  };
+
+  // Special handling for PDFs
+  if (file.mimetype === 'application/pdf') {
+    uploadOptions.format = 'pdf';
+  }
+
+  console.log('Upload options:', uploadOptions);
+  return uploadOptions;
+};
+
 // Function to upload file to Cloudinary
 const uploadToCloudinary = async (file, userId, fieldName) => {
   return new Promise((resolve, reject) => {
@@ -63,11 +82,7 @@ const uploadToCloudinary = async (file, userId, fieldName) => {
       return;
     }
 
-    const uploadOptions = {
-      folder: `legal_compliance/${userId}`,
-      resource_type: 'auto',
-      public_id: `${fieldName}_${Date.now()}`
-    };
+    const uploadOptions = getUploadOptions(file, userId, fieldName);
 
     // Create upload stream
     const uploadStream = cloudinary.uploader.upload_stream(
@@ -77,10 +92,31 @@ const uploadToCloudinary = async (file, userId, fieldName) => {
           console.error('Cloudinary upload error:', error);
           reject(error);
         } else {
-          resolve({ fieldName, url: result.secure_url });
+          console.log('Cloudinary upload result:', result);
+          
+          let url = result.secure_url;
+          
+          // For PDFs, ensure proper delivery URL
+          if (file.mimetype === 'application/pdf') {
+            // Ensure HTTPS
+            url = url.replace('http://', 'https://');
+            
+            // Add PDF specific transformation
+            if (!url.includes('?')) {
+              url += '?response-content-disposition=inline';
+            }
+          }
+          
+          resolve({ fieldName, url });
         }
       }
     );
+
+    // Add error handler for the upload stream
+    uploadStream.on('error', (error) => {
+      console.error('Upload stream error:', error);
+      reject(error);
+    });
 
     // Convert buffer to stream and pipe to Cloudinary
     const bufferStream = require('stream').Readable.from(file.buffer);

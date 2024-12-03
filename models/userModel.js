@@ -49,6 +49,10 @@ const hrSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Phone number is required']
     },
+    photo: {
+        type: String,
+        default: ''  // Default empty string if no photo provided
+    },
     DOB: {
         type: Date,
         required: [true, 'Date of birth is required']

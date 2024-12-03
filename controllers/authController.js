@@ -4,6 +4,7 @@ const config = require("../config");
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const cloudinary = require('cloudinary').v2;
 
 // Create email transporter
 const transporter = nodemailer.createTransport({
@@ -38,7 +39,24 @@ exports.register = async (req, res) => {
         console.log('👉 Register endpoint hit');
         console.log('📦 Request body:', req.body);
         
-        const { email, password, role = 'HR' } = req.body;
+        const { 
+            email, password, firstName, lastName, phoneNumber, 
+            DOB, gender, joiningDate 
+        } = req.body;
+
+        // Validate required fields
+        const requiredFields = [
+            'email', 'password', 'firstName', 'lastName', 'phoneNumber',
+            'DOB', 'gender', 'joiningDate'
+        ];
+
+        const missingFields = requiredFields.filter(field => !req.body[field]);
+        if (missingFields.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Missing required fields: ${missingFields.join(', ')}`
+            });
+        }
 
         // Check if user already exists
         const existingUser = await HR.findOne({ email });
@@ -56,12 +74,46 @@ exports.register = async (req, res) => {
 
         // Create new HR instance with all fields
         const hrData = {
+            firstName,
+            lastName,
             email,
             password: hashedPassword,
-            role,
+            phoneNumber,
+            DOB: new Date(DOB),
+            gender,
+            joiningDate: new Date(joiningDate),
+            role: 'HR',
             status: 'pending',
             formProgress: 'personal'
         };
+
+        // Handle photo upload
+        if (req.file) {
+            // Upload to Cloudinary
+            const result = await new Promise((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: 'hr_photos',
+                        resource_type: 'image'
+                    },
+                    (error, result) => {
+                        if (error) {
+                            console.error('Cloudinary upload error:', error);
+                            reject(error);
+                        } else {
+                            resolve(result);
+                        }
+                    }
+                );
+
+                // Create a buffer stream and pipe it to the upload stream
+                const bufferStream = require('stream').Readable.from(req.file.buffer);
+                bufferStream.pipe(uploadStream);
+            });
+
+            // Add photo URL to HR data
+            hrData.photo = result.secure_url;
+        }
 
         console.log("📝 Creating new HR with data:", { ...hrData, password: '[HIDDEN]' });
 
@@ -80,10 +132,14 @@ exports.register = async (req, res) => {
             token,
             user: {
                 id: savedHR._id,
+                firstName: savedHR.firstName,
+                lastName: savedHR.lastName,
                 email: savedHR.email,
+                phoneNumber: savedHR.phoneNumber,
                 role: savedHR.role,
                 status: savedHR.status,
-                formProgress: savedHR.formProgress
+                formProgress: savedHR.formProgress,
+                photo: savedHR.photo
             }
         });
 
