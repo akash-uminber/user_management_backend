@@ -365,7 +365,7 @@ exports.forgotPassword = async (req, res) => {
         await hr.save();
 
         // Create reset URL with unhashed token
-        const resetUrl = `http://localhost:3000/reset-password/${hashedToken}`;
+        const resetUrl = `http://localhost:5173/reset-password/${hashedToken}`;
 
         // Create email content
         const mailOptions = {
