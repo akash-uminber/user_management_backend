@@ -1,18 +1,38 @@
-# Backend Setup
+# User Management Backend
 
-## Environment Variables
+## Overview
+The User Management Backend is a RESTful API designed to manage user information, including personal details, current work information, and educational history etc. This project provides endpoints for creating, updating, and retrieving user data.
 
-To run this project, you need to set up your environment variables. Follow these steps:
+## Technologies Used
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT (for authentication)
 
-1. Copy the `.env.example` file and rename it to `.env`:   ```
-   cp .env.example .env   ```
+## Other Technologies
+- Cloudinary (for image uploading)
+- SMTP (for sending emails)
+- Multer (for file uploading)
 
-2. Open the `.env` file and replace the placeholder values with your actual configuration:   ```
-   PORT=3000
-   JWT_SECRET=your_very_secure_and_long_random_secret_key   ```
+## Note
+- This project is still in development and in the process of connectivity with the frontend.
+- Please to use this project clone this project and run the following commands:
+- `npm install`
+- Also to use this project in your project root add .env file and add the following variables:
+- `MONGO_URI`
+- `JWT_SECRET`
+- `EMAIL_HOST`
+- `EMAIL_PORT`
+- `EMAIL_USER`
+- `EMAIL_PASS`
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+- `PORT`
 
-   Make sure to use a strong, unique secret key for JWT_SECRET.
 
-3. Save the file and you're ready to go!
-
-Note: Never commit your `.env` file to version control. It's already added to `.gitignore`.
+## Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/akash-uminber/user_management_backend.git
