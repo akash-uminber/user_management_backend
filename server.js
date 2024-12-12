@@ -15,6 +15,13 @@ const multer = require('multer');
 
 const app = express();
 
+// Add server identification
+app.use((req, res, next) => {
+  res.setHeader('X-Server-Port', PORT);
+  console.log(`🔷 Request handled by server on port ${PORT}`);
+  next();
+});
+
 // Add these lines after your express app initialization
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
@@ -99,6 +106,7 @@ app.listen(PORT, () => {
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
-  console.error('❌ Unhandled Promise rejection:', err);
+  // console.error('❌ Unhandled Promise rejection:', err);
+   console.error(`❌ Unhandled Promise rejection on instance ${PORT}:`, err);
   // Don't exit the process, just log the error
 });
