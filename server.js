@@ -15,12 +15,12 @@ const multer = require('multer');
 
 const app = express();
 
-// Add server identification
-// app.use((req, res, next) => {
-//   res.setHeader('X-Server-Port', PORT);
-//   console.log(`🔷 Request handled by server on port ${PORT}`);
-//   next();
-// });
+//Add server identification
+app.use((req, res, next) => {
+  res.setHeader('X-Server-Port', PORT);
+  console.log(`🔷 Request handled by server on port ${PORT}`);
+  next();
+});
 
 // Add these lines after your express app initialization
 app.use(express.static('public'));
