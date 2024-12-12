@@ -1,42 +1,24 @@
 const { HR } = require('../models/userModel');
+const jwt = require("jsonwebtoken");
+const config = require("../config");
 
 // Update HR Profile
 exports.updateProfile = async (req, res) => {
+    const { hrId, firstName, lastName, email, phoneNumber, DOB, gender, joiningDate, photo } = req.body;
+
+    // Ensure hrId is present
+    if (!hrId) {
+        return res.status(400).json({ error: 'HR ID is required' });
+    }
+
     try {
-        const hrId = req.user.id; // Get HR ID from auth middleware
-        const {
-            firstName,
-            lastName,
-            email,
-            phoneNumber,
-            DOB,
-            gender,
-            joiningDate
-        } = req.body;
+        const hr = await HR.findById(hrId); // Assuming you are using Mongoose
 
-        console.log('👉 Update profile request for HR:', hrId);
-
-        // Find HR by ID
-        const hr = await HR.findById(hrId);
         if (!hr) {
-            return res.status(404).json({
-                success: false,
-                message: 'HR not found'
-            });
+            return res.status(404).json({ error: 'HR record not found' });
         }
 
-        // If email is being updated, check if new email already exists
-        if (email && email !== hr.email) {
-            const emailExists = await HR.findOne({ email });
-            if (emailExists) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Email already in use'
-                });
-            }
-        }
-
-        // Update fields if provided
+        // Update fields
         if (firstName) hr.firstName = firstName;
         if (lastName) hr.lastName = lastName;
         if (email) hr.email = email;
@@ -44,41 +26,71 @@ exports.updateProfile = async (req, res) => {
         if (DOB) hr.DOB = DOB;
         if (gender) hr.gender = gender;
         if (joiningDate) hr.joiningDate = joiningDate;
+        if (photo) hr.photo = photo;
 
         await hr.save();
-        console.log('✅ Profile updated successfully');
-
-        res.status(200).json({
-            success: true,
-            message: 'Profile updated successfully',
-            data: {
-                firstName: hr.firstName,
-                lastName: hr.lastName,
-                email: hr.email,
-                phoneNumber: hr.phoneNumber,
-                DOB: hr.DOB,
-                gender: hr.gender,
-                joiningDate: hr.joiningDate
-            }
-        });
-
-    } catch (err) {
-        console.error('❌ Error updating profile:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Error updating profile',
-            error: err.message
-        });
+        return res.status(200).json({ success: true, data: hr });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
 // Get HR Profile
+// exports.getProfile = async (req, res) => {
+//     try {
+//         // const hrId = req.user._id;
+//         const hrId = req.cookies._id;
+//         console.log('👉 Get profile request for HR:', hrId);
+
+//         const hr = await HR.findById(hrId).select('-password -otp -otpExpires -resetPasswordToken -resetPasswordExpires');
+//         if (!hr) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'HR not found'
+//             });
+//         }
+
+//         console.log('✅ Profile retrieved successfully');
+
+//         res.status(200).json({
+//             success: true,
+//             data: hr
+//         });
+
+//     } catch (err) {
+//         console.error('❌ Error getting profile:', err);
+//         res.status(500).json({
+//             success: false,
+//             message: 'Error getting profile',
+//             error: err.message
+//         });
+//     }
+// };
+
+// Get HR Profile
 exports.getProfile = async (req, res) => {
     try {
-        const hrId = req.user.id;
+        // Get token from cookie
+        const token = req.cookies.token;
+        
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        // Decode token to get HR ID
+        const decoded = jwt.verify(token, config.jwtSecret);
+        const hrId = decoded.id;  // The ID is stored as 'id' in the token
+
         console.log('👉 Get profile request for HR:', hrId);
 
-        const hr = await HR.findById(hrId).select('-password -otp -otpExpires -resetPasswordToken -resetPasswordExpires');
+        // Fetch the HR record from the database
+        const hr = await HR.findById(hrId)
+            .select('-password -otp -otpExpires -resetPasswordToken -resetPasswordExpires');
+
         if (!hr) {
             return res.status(404).json({
                 success: false,
@@ -95,6 +107,12 @@ exports.getProfile = async (req, res) => {
 
     } catch (err) {
         console.error('❌ Error getting profile:', err);
+        if (err.name === 'JsonWebTokenError') {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid token'
+            });
+        }
         res.status(500).json({
             success: false,
             message: 'Error getting profile',

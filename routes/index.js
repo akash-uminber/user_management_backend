@@ -8,6 +8,7 @@ const personalInfoController = require('../controllers/personalInfoController');
 const educationInfoController = require('../controllers/educationInfoController');
 const workInfoController = require('../controllers/workInfoController');
 const currentWorkInfoController = require('../controllers/currentWorkInfoController');
+const hrController = require('../controllers/hrController');
 
 // Debug route to verify router is working
 router.get('/test', (req, res) => {
@@ -20,6 +21,8 @@ router.post('/register', photoUpload, authController.register);
 router.post('/verify-otp', authController.verifyOTP);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password/:token', authController.resetPassword);
+router.post('/update-profile', photoUpload, hrController.updateProfile);
+router.get('/profile', hrController.getProfile);
 
 // Personal Information routes
 router.post("/personal-info", personalInfoController.addPersonalInfo);
