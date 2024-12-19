@@ -1,0 +1,231 @@
+# code for load test for register endpoint 
+
+# config:
+#   target: "http://localhost:80"
+#   phases:
+#     - duration: 30
+#       arrivalRate: 2
+#       name: "Warm up - 2 users per second"
+#     - duration: 60
+#       arrivalRate: 5
+#       rampTo: 10
+#       name: "Ramp up - 5 to 10 users per second"
+#     - duration: 30
+#       arrivalRate: 10
+#       name: "Sustained load - 10 users per second"
+#   http:
+#     pool: 10
+
+# scenarios:
+#   - name: "Valid HR Registration"
+#     weight: 3
+#     flow:
+#       - post:
+#           url: "/api/register"
+#           json:
+#             email: "test{{$randomNumber(1000,9999)}}@example.com"
+#             password: "Test@123"
+#             firstName: "Test{{$randomNumber(1,100)}}"
+#             lastName: "User{{$randomNumber(1,100)}}"
+#             phoneNumber: "+1{{$randomNumber(1000000000,9999999999)}}"
+#             DOB: "1990-01-01"
+#             gender: "Male"
+#             joiningDate: "2024-01-01"
+#           expect:
+#             - statusCode: 201
+#             - hasProperty: "success"
+#             - hasProperty: "user.email"
+#             - hasProperty: "user.firstName"
+#             - hasProperty: "token"
+
+#       - think: 1
+
+#   - name: "Invalid Registration Tests"
+#     weight: 1
+#     flow:
+#       # Missing required fields
+#       - post:
+#           url: "/api/register"
+#           json:
+#             email: "incomplete{{$randomNumber(1,1000)}}@example.com"
+#             password: "Test@123"
+#           expect:
+#             - statusCode: 400
+#             - hasProperty: "success"
+#             - hasProperty: "message"
+
+#       - think: 1
+
+#       # Duplicate email test (assumes email exists)
+#       - post:
+#           url: "/api/register"
+#           json:
+#             email: "test1000@example.com"
+#             password: "Test@123"
+#             firstName: "Test"
+#             lastName: "User"
+#             phoneNumber: "+11234567890"
+#             DOB: "1990-01-01"
+#             gender: "Male"
+#             joiningDate: "2024-01-01"
+#           expect:
+#             - statusCode: 400
+
+#       - think: 1
+
+# code for test load testing on personal-info api 
+
+
+# config:
+#   target: "http://localhost:80"
+#   processor: "./processor.js"
+#   phases:
+#     - duration: 30
+#       arrivalRate: 20
+#       rampTo: 30
+#       name: "Warm up - 10 to 15 users per second"
+#     - duration: 60
+#       arrivalRate: 40
+#       rampTo: 50
+#       name: "Ramp to phase 2"
+#     - duration: 120
+#       arrivalRate: 100
+#       maxVusers: 200
+#       name: "Sustained load"
+#   http:
+#     pool: 50
+#     timeout: 10000
+#     maxSockets: 100
+
+#   tls:
+#     rejectUnauthorized: false
+#   socketio:
+#     reconnectionDelayMax: 5000
+#   plugins:
+#     expect: {}
+#     metrics-by-endpoint: {}
+#     ensure:
+#       thresholds:
+#         - http.response_time.p95: 2000
+#         - http.response_time.median: 300
+#         - errors.ECONNRESET: 100
+#         - errors.ECONNREFUSED: 100
+#         - vusers.failed: 50
+  
+
+# scenarios:
+#   - name: "Valid Personal Info Requests"
+#     weight: 3
+#     flow:
+#       - log: "Starting test iteration"
+#       - get:
+#           url: "/api/personal-info/674803e8b330c3ef6486507c"
+#           headers:
+#             Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NDU2OGQyZmM1NjQ0Y2Q1ODBmNDIxZSIsImVtYWlsIjoidmlja3lwYW5kaXQzMjE0QGdtYWlsLmNvbSIsImlhdCI6MTczNDA3NjAzMSwiZXhwIjoxNzM0MTYyNDMxfQ.4vOaisJkGxEwod0JRNCvvQL1ReyrwtYm8zWILUVsQ5I"
+#           # hooks:
+#           afterResponse: ["trackRequest"]
+#           expect:
+#             - statusCode: 200
+#             - hasProperty: "success"
+#             - hasProperty: "data"
+#       - think: 1
+
+#       - get:
+#           url: "/api/personal-info/6749b91cda9aa8f094f16d30"
+#           headers:
+#             Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NDU2OGQyZmM1NjQ0Y2Q1ODBmNDIxZSIsImVtYWlsIjoidmlja3lwYW5kaXQzMjE0QGdtYWlsLmNvbSIsImlhdCI6MTczNDA3NjAzMSwiZXhwIjoxNzM0MTYyNDMxfQ.4vOaisJkGxEwod0JRNCvvQL1ReyrwtYm8zWILUVsQ5I"
+#           # hooks:
+#           afterResponse: ["trackRequest"]
+#           expect:
+#             - statusCode: 200
+#             - hasProperty: "success"
+#             - hasProperty: "data"
+#       - think: 1
+
+#       - get:
+#           url: "/api/personal-info/674ab24d4c3572f504418c76"
+#           headers:
+#             Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NDU2OGQyZmM1NjQ0Y2Q1ODBmNDIxZSIsImVtYWlsIjoidmlja3lwYW5kaXQzMjE0QGdtYWlsLmNvbSIsImlhdCI6MTczNDA3NjAzMSwiZXhwIjoxNzM0MTYyNDMxfQ.4vOaisJkGxEwod0JRNCvvQL1ReyrwtYm8zWILUVsQ5I"
+#           # hooks:
+#           afterResponse: ["trackRequest"]
+#           expect:
+#             - statusCode: 200
+#             - hasProperty: "success"
+#             - hasProperty: "data"
+#       - think: 1
+
+#       - get:
+#           url: "/api/personal-info/6752cc45cc4a8e3c3da46c7e"
+#           headers:
+#             Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NDU2OGQyZmM1NjQ0Y2Q1ODBmNDIxZSIsImVtYWlsIjoidmlja3lwYW5kaXQzMjE0QGdtYWlsLmNvbSIsImlhdCI6MTczNDA3NjAzMSwiZXhwIjoxNzM0MTYyNDMxfQ.4vOaisJkGxEwod0JRNCvvQL1ReyrwtYm8zWILUVsQ5I"
+#           # hooks:
+#           afterResponse: ["trackRequest"]
+#           expect:
+#             - statusCode: 200
+#             - hasProperty: "success"
+#             - hasProperty: "data"
+#       - think: 1
+
+# code for test load testing on personal-info api end here 
+
+# code for test load testing on find user-history api start here 
+
+config:
+  target: "http://localhost:3001"
+  processor: "./processor.js"
+  phases:
+    - duration: 60
+      arrivalRate: 40
+      rampTo: 50
+      name: "Warm up - 40 to 50 users per second"
+    - duration: 120
+      arrivalRate: 100
+      rampTo: 150
+      name: "Ramp to phase 2"
+    - duration: 180
+      arrivalRate: 200
+      maxVusers: 250
+      name: "Sustained load"
+  
+  http:
+    pool: 50
+    timeout: 15000
+    maxSockets: 100
+
+  tls:
+    rejectUnauthorized: false
+  
+  plugins:
+    expect: {}
+    metrics-by-endpoint: {}
+    ensure:
+      thresholds:
+        - http.response_time.p95: 2000
+        - http.response_time.median: 300
+        - errors.ECONNRESET: 100
+        - errors.ECONNREFUSED: 100
+        - vusers.failed: 50
+
+scenarios:
+  - name: "Valid user-history Info Requests"
+    weight: 3
+    flow:
+      - log: "Starting test iteration"
+      - get:
+          url: "/api/user-history"
+          headers:
+            Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NWZjOTAwMjI5YmRkZjZhMDFhYTE0NSIsImVtYWlsIjoiaHIub2ZmaWNlQHVtaW5iZXIuaW4iLCJpYXQiOjE3MzQzMzA3MjcsImV4cCI6MTczNDQxNzEyN30.ZjMQOAWxNRzkEPaiO2w0g3xUFIwv42k-H6ueMAV7Geo"
+          capture:
+            json: "$"
+            as: "response"
+          expect:
+            - statusCode: 200
+            - hasHeader: "content-type"
+            - contentType: "application/json; charset=utf-8"
+            - hasProperty: "success"
+            - matches: 
+                json: "$.success"
+                value: true
+            - hasProperty: "data"
+      - think: 1
+      

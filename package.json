@@ -12,6 +12,9 @@
     "start-all": "concurrently \"npm run start-3002\" \"npm run start-3003\" \"npm run start-3004\""
   },
   "dependencies": {
+    "artillery-plugin-apdex": "^1.12.0",
+    "artillery-plugin-ensure": "^1.15.0",
+    "artillery-plugin-expect": "^2.15.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
     "concurrently": "^9.1.0",
